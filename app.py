@@ -40,4 +40,5 @@ def charge_and_transfer():
         }), 400
 
 if __name__ == '__main__':
-    app.run(port=5000)
+    port = int(os.environ.get("PORT", 10000))  # Render sets PORT
+    app.run(host="0.0.0.0", port=port)
