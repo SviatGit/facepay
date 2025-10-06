@@ -6,7 +6,9 @@ from dotenv import load_dotenv
 import threading
 
 load_dotenv()
-BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:5000")
+BACKEND_URL = os.getenv("BACKEND_URL")
+if not BACKEND_URL:
+    raise RuntimeError("BACKEND_URL is not set")
 
 LOG_FILE = "data/payment_log.json"
 LOG_LOCK = threading.Lock()
