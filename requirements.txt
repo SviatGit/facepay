@@ -1,21 +1,11 @@
-# Flask API and backend communication
-Flask
+flask
 requests
 python-dotenv
 gunicorn
-
-# Stripe payment handling
 stripe
-
-# Face recognition (DeepFace uses many dependencies)
 deepface
 scipy
 numpy
 opencv-python
-Pillow
-
-# GUI
-tk
-
-# Optional (in case of compatibility issues with DeepFace backend)
+pillow
 tensorflow>=2.5.0

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FacePay Web</title>
+
+  <!-- External Fonts and CSS -->
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <h1>💳 FacePay Web</h1>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button onclick="showTab('register')">🧍 Register</button>
+    <button onclick="showTab('payment')">💸 Send Payment</button>
+  </div>
+
+  <!-- REGISTER TAB -->
+  <div id="register" class="tab active">
+    <h2>Register</h2>
+
+    <form onsubmit="event.preventDefault(); registerUser();">
+      <input type="text" id="reg_name" placeholder="Full Name" required />
+      <input type="text" id="reg_stripe_id" placeholder="Stripe Customer ID" required />
+
+      <video id="reg_video" autoplay muted playsinline></video>
+
+      <button type="button" class="capture" onclick="captureFace('register')">📸 Capture Face</button>
+      <button type="submit">✅ Register</button>
+
+      <p id="reg_status"></p>
+    </form>
+  </div>
+
+  <!-- PAYMENT TAB -->
+  <div id="payment" class="tab">
+    <h2>Send Payment</h2>
+
+    <form onsubmit="event.preventDefault(); sendPayment();">
+      <input type="text" id="recipient_id" placeholder="Recipient Stripe Account ID" required />
+      <input type="number" id="amount" placeholder="Amount (GBP)" step="0.01" required />
+
+      <video id="pay_video" autoplay muted playsinline></video>
+
+      <button type="button" class="capture" id="verify_face_btn" onclick="verifyFace()">🔐 Verify Face</button>
+      <button type="submit" id="send_payment_btn" disabled>💸 Send Payment</button>
+
+      <p id="face_verification_status"></p>
+      <p id="payment_result"></p>
+    </form>
+  </div>
+
+  <!-- Script -->
+  <script src="script.js"></script>
+</body>
+</html>
