@@ -9,4 +9,4 @@ numpy
 opencv-python
 pillow
 tensorflow>=2.5.0
-tf-keras==0.5.0
+tf-keras
