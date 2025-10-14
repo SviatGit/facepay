@@ -12,8 +12,8 @@ from dotenv import load_dotenv
 import stripe
 import numpy as np
 
-from face_utils import get_face_embedding, match_face
-from user_store import load_users, register_user
+from face_utils import get_face_embedding, find_matching_user_by_embedding
+from user_store import register_user
 
 # === Load env variables and Stripe key ===
 load_dotenv()
@@ -23,7 +23,6 @@ stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 app = Flask(__name__)
 CORS(app)
 
-USERS = load_users()
 LOG_FILE = "data/payment_log.json"
 LOG_LOCK = threading.Lock()
 
@@ -79,7 +78,6 @@ def api_register():
 
         embedding = get_face_embedding(np_image)
         user = register_user(name, stripe_id, embedding)
-        USERS.append(user)
 
         return jsonify({"status": "success", "user_id": user["user_id"]})
     except Exception as e:
@@ -100,7 +98,7 @@ def api_verify():
         np_image = np.array(image)
 
         embedding = get_face_embedding(np_image)
-        user = match_face(embedding, USERS)
+        user = find_matching_user_by_embedding(embedding)
 
         if user:
             return jsonify({"status": "success"})
@@ -126,7 +124,7 @@ def api_pay():
         np_image = np.array(image)
         embedding = get_face_embedding(np_image)
 
-        user = match_face(embedding, USERS)
+        user = find_matching_user_by_embedding(embedding)
         if not user:
             return jsonify({"status": "error", "error": "Face not recognized"}), 401
 

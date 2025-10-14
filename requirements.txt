@@ -10,3 +10,4 @@ opencv-python
 pillow
 tensorflow>=2.5.0
 tf-keras
+psycopg2-binary

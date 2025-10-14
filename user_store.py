@@ -1,34 +1,69 @@
-import json
 import os
-import threading
+import json
+import psycopg2
+from psycopg2.extras import RealDictCursor
+from dotenv import load_dotenv
 
-USER_FILE = "data/users.json"
-LOCK = threading.Lock()
+load_dotenv()
 
-def load_users():
-    if not os.path.exists(USER_FILE):
-        return []
-    with LOCK:
-        with open(USER_FILE, "r") as f:
-            return json.load(f)
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-def save_users(users):
-    with LOCK:
-        with open(USER_FILE, "w") as f:
-            json.dump(users, f, indent=4)
+def get_connection():
+    return psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
 
 def register_user(name, stripe_customer_id, face_embedding):
-    users = load_users()
-    user_id = stripe_customer_id  # Use Stripe customer ID as user_id
-    new_user = {
+    """
+    Registers a new user by inserting into the PostgreSQL database.
+    Face embedding is stored as a JSON string.
+    """
+    user_id = stripe_customer_id  # Use Stripe customer ID as user ID
+
+    try:
+        conn = get_connection()
+        with conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    INSERT INTO users (user_id, name, stripe_customer_id, face_embedding)
+                    VALUES (%s, %s, %s, %s)
+                    ON CONFLICT (user_id) DO NOTHING
+                """, (
+                    user_id,
+                    name,
+                    stripe_customer_id,
+                    json.dumps(face_embedding)
+                ))
+    finally:
+        conn.close()
+
+    return {
         "user_id": user_id,
         "name": name,
         "stripe_customer_id": stripe_customer_id,
         "face_embedding": face_embedding
     }
-    users.append(new_user)
-    save_users(users)
-    return new_user
 
-#https://connect.stripe.com/d/setup/s/_T9WQFwo7OouMo3TWDCFZPau2Db/YWNjdF8xU0RETnVMbXBXakJBWjAz/07671af6ba4010217
-#https://dashboard.stripe.com/b/acct_1SDDNuLmpWjBAZ03/account/status
+def load_users():
+    """
+    Loads all users from the PostgreSQL database.
+    """
+    try:
+        conn = get_connection()
+        with conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT user_id, name, stripe_customer_id, face_embedding FROM users
+                """)
+                rows = cur.fetchall()
+    finally:
+        conn.close()
+
+    users = []
+    for row in rows:
+        users.append({
+            "user_id": row["user_id"],
+            "name": row["name"],
+            "stripe_customer_id": row["stripe_customer_id"],
+            "face_embedding": json.loads(row["face_embedding"])  # Convert string to list
+        })
+
+    return users
